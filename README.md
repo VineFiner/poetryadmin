@@ -46,6 +46,24 @@ These environment variables will be used for configuring different services by d
 | `SITE_FRONTEND_URL`   | None                     | The URL where your frontend will be hosted ex: "http://myapp.com" (used for reset-password URL)     |
 | `NO_REPLY_EMAIL`      | None                     | The no reply email that will be used for Mailgun                                                    |
 | `REDIS_URL`           | `redis://127.0.0.1:6379` | Redis URL for Queues worker.                                                                        |
+
+> Config Env
+
+### env
+
+Changing Environment
+
+```
+vapor run serve --env production
+```
+
+When the project is cloned to a new computer, the template `.env` file can be copied and have the correct values inserted.
+
+```
+cp .env .env.development
+vim .env.development
+```
+
 ### App config
 `AppConfig` contains configuration like API URL, frontend URL and no-reply email. It loads from environment variables by default. Otherwise you can override it inside `configure.swift`:
 ```swift
@@ -66,3 +84,6 @@ The template uses [VaporMailgunService](https://github.com/vapor-community/Vapor
 
 ### JWT
 This package uses JWT for Access Tokens, and by default it loads JWT credentials from a JWKS file called `keypair.jwks` in the root directory. You can generate a JWKS keypair at https://mkjwk.org/
+
+
+

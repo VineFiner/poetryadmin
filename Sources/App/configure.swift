@@ -1,5 +1,6 @@
 import Fluent
 import FluentPostgresDriver
+import FluentSQLiteDriver
 import Vapor
 import JWT
 import Mailgun
@@ -20,14 +21,19 @@ public func configure(_ app: Application) throws {
     
     // MARK: Database
     // Configure PostgreSQL database
-    app.databases.use(
-        .postgres(
-            hostname: Environment.get("POSTGRES_HOSTNAME") ?? "localhost",
-            username: Environment.get("POSTGRES_USERNAME") ?? "vapor",
-            password: Environment.get("POSTGRES_PASSWORD") ?? "password",
-            database: Environment.get("POSTGRES_DATABASE") ?? "vapor"
-        ), as: .psql)
-        
+    if app.environment == .production {
+        app.databases.use(
+            .postgres(
+                hostname: Environment.get("POSTGRES_HOSTNAME") ?? "localhost",
+                username: Environment.get("POSTGRES_USERNAME") ?? "vapor",
+                password: Environment.get("POSTGRES_PASSWORD") ?? "password",
+                database: Environment.get("POSTGRES_DATABASE") ?? "vapor"
+            ), as: .psql)
+    } else {
+        app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
+
+    }
+    
     // MARK: Middleware
     app.middleware = .init()
     app.middleware.use(ErrorMiddleware.custom(environment: app.environment))
@@ -43,12 +49,18 @@ public func configure(_ app: Application) throws {
     
     try routes(app)
     try migrations(app)
+    // 这里是任务
     try queues(app)
+    // 配置服务
     try services(app)
     
     
     if app.environment == .development {
         try app.autoMigrate().wait()
+    }
+    
+    if app.environment == .custom(name: "processJobs") {
+        // 这里是定时任务
         try app.queues.startInProcessJobs()
     }
 }
